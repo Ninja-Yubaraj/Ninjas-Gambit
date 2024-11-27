@@ -1,8 +1,27 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #eee;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+/* Game status */
+#game-status {
+  text-align: center;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
 /* Style for the chessboard container */
 #chessboard {
   width: 480px;
   height: 480px;
-  margin: 20px auto;
+  margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
   border: 2px solid #333;
@@ -34,22 +53,32 @@
 }
 
 .selected {
-  outline: 2px solid red;
-}
-
-/* Game status */
-#game-status {
-  text-align: center;
-  font-size: 1.2em;
-  margin-bottom: 10px;
+  outline: 2px solid blue;
 }
 
 /* Highlight possible moves */
 .possible-move {
   background-color: rgba(0, 255, 0, 0.5);
+  cursor: pointer;
 }
 
 /* Highlight the king in check */
 .check {
-  outline: 2px solid red;
+  outline: 3px solid red;
+}
+
+/* Move History Styles */
+.move-history {
+  width: 480px;
+  margin: 20px auto;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #333;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+.move-history div {
+  margin-bottom: 5px;
+  font-size: 0.9em;
 }
