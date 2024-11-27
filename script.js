@@ -180,7 +180,7 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
   } else if (isStalemate(turn)) {
     alert(`Game over: Stalemate!`);
   } else if (isCheck(turn)) {
-    alert(`${turn === 'w' ? 'White' : 'Black'} is in check!`);
+    // alert(`${turn === 'w' ? 'White' : 'Black'} is in check!`);
   }
 
   createBoard();
