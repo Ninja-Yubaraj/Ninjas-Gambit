@@ -123,6 +123,7 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
   const movingPiece = boardState[fromRow][fromCol];
   let capturedPiece = boardState[toRow][toCol];
   let isCastlingMove = false;
+  let promotion = null;
 
   // Handle castling move
   if (movingPiece[1] === 'k' && Math.abs(fromCol - toCol) === 2) {
@@ -152,7 +153,7 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
 
   // Pawn Promotion
   if (movingPiece[1] === 'p' && (toRow === 0 || toRow === 7)) {
-    promotePawn(toRow, toCol, movingPiece[0]);
+    promotion = promotePawn(toRow, toCol, movingPiece[0]);
   }
 
   // Update en passant target
@@ -161,27 +162,39 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
     enPassantTarget = { row: (fromRow + toRow) / 2, col: fromCol };
   }
 
+  // Switch turns
+  turn = turn === 'w' ? 'b' : 'w';
+
+  // Check for check or checkmate
+  const opponentColor = turn;
+  const isOpponentInCheck = isCheck(opponentColor);
+  const isOpponentInCheckmate = isCheckmate(opponentColor);
+  const isOpponentInStalemate = isStalemate(opponentColor);
+
+  // Store the move in moveHistory with check information
   moveHistory.push({
     piece: movingPiece,
     from: [fromRow, fromCol],
     to: [toRow, toCol],
     captured: capturedPiece,
-    isCastling: isCastlingMove
+    isCastling: isCastlingMove,
+    promotion: promotion,
+    isCheck: isOpponentInCheck,
+    isCheckmate: isOpponentInCheckmate
   });
 
   moveCount++;
 
-  // Switch turns
-  turn = turn === 'w' ? 'b' : 'w';
-
-  // Check for checkmate or stalemate
-  if (isCheckmate(turn)) {
+  // Handle game end conditions
+  if (isOpponentInCheckmate) {
     alert(`${turn === 'w' ? 'Black' : 'White'} wins by checkmate!`);
-  } else if (isStalemate(turn)) {
+  } else if (isOpponentInStalemate) {
     alert(`Game over: Stalemate!`);
-  } else if (isCheck(turn)) {
-    // alert(`${turn === 'w' ? 'White' : 'Black'} is in check!`);
   }
+  // Commented out the alert for checks
+  // else if (isOpponentInCheck) {
+  //   alert(`${turn === 'w' ? 'White' : 'Black'} is in check!`);
+  // }
 
   createBoard();
   updateMoveHistory();
@@ -214,6 +227,7 @@ function promotePawn(row, col, color) {
     pieceType = pieceType.toLowerCase();
   }
   boardState[row][col] = color + pieceType;
+  return pieceType;
 }
 
 function getPossibleMoves(row, col) {
@@ -620,33 +634,106 @@ function getKingMovesInBoard(board, row, col, color) {
 function updateMoveHistory() {
   const historyDiv = document.getElementById('move-history');
   historyDiv.innerHTML = '';
-  moveHistory.forEach((move, index) => {
+
+  // Group moves by move number
+  const movesByNumber = [];
+  for (let i = 0; i < moveHistory.length; i += 2) {
+    const whiteMove = moveHistory[i];
+    const blackMove = moveHistory[i + 1];
+    movesByNumber.push({ whiteMove, blackMove });
+  }
+
+  movesByNumber.forEach((movePair, index) => {
+    const moveNumber = index + 1;
+    const whiteAlgebraic = movePair.whiteMove ? getAlgebraicNotation(movePair.whiteMove) : '';
+    const blackAlgebraic = movePair.blackMove ? getAlgebraicNotation(movePair.blackMove) : '';
+
     const moveText = document.createElement('div');
-    const moveNumber = Math.floor(index / 2) + 1;
-    const player = move.piece[0] === 'w' ? 'White' : 'Black';
-    const pieceName = getPieceName(move.piece[1]);
-    const fromPosition = `${String.fromCharCode(97 + move.from[1])}${8 - move.from[0]}`;
-    const toPosition = `${String.fromCharCode(97 + move.to[1])}${8 - move.to[0]}`;
-    const captured = move.captured ? 'x' : '-';
-    moveText.textContent = `${moveNumber}. ${player} ${pieceName} ${fromPosition}${captured}${toPosition}`;
+    moveText.textContent = `${moveNumber}. ${whiteAlgebraic}    ${blackAlgebraic}`;
     historyDiv.appendChild(moveText);
   });
 }
 
-function getPieceName(type) {
+function getAlgebraicNotation(move) {
+  const piece = move.piece;
+  const from = move.from;
+  const to = move.to;
+  const captured = move.captured;
+  const isCastling = move.isCastling;
+  const promotion = move.promotion;
+  const isCheck = move.isCheck;
+  const isCheckmate = move.isCheckmate;
+
+  const pieceType = piece[1];
+  const color = piece[0];
+  let pieceLetter = '';
+
+  if (pieceType !== 'p') {
+    pieceLetter = getPieceLetter(pieceType);
+  }
+
+  // Castling
+  if (isCastling) {
+    if (to[1] === 6) {
+      return 'O-O'; // King-side castling
+    } else if (to[1] === 2) {
+      return 'O-O-O'; // Queen-side castling
+    }
+  }
+
+  const fromFile = String.fromCharCode(97 + from[1]);
+  const fromRank = 8 - from[0];
+  const toFile = String.fromCharCode(97 + to[1]);
+  const toRank = 8 - to[0];
+  const toSquare = `${toFile}${toRank}`;
+
+  let notation = '';
+
+  // Pawn moves
+  if (pieceType === 'p') {
+    if (captured) {
+      notation = `${fromFile}x${toSquare}`;
+    } else {
+      notation = `${toSquare}`;
+    }
+  } else {
+    notation = `${pieceLetter}`;
+    // Disambiguation is omitted for simplicity
+    if (captured) {
+      notation += `x`;
+    }
+    notation += `${toSquare}`;
+  }
+
+  // Promotion
+  if (promotion) {
+    notation += `=${getPieceLetter(promotion)}`;
+  }
+
+  // Check or Checkmate
+  if (isCheckmate) {
+    notation += '#';
+  } else if (isCheck) {
+    notation += '+';
+  }
+
+  return notation;
+}
+
+function getPieceLetter(type) {
   switch (type) {
     case 'p':
-      return 'Pawn';
+      return '';
     case 'r':
-      return 'Rook';
+      return 'R';
     case 'n':
-      return 'Knight';
+      return 'N';
     case 'b':
-      return 'Bishop';
+      return 'B';
     case 'q':
-      return 'Queen';
+      return 'Q';
     case 'k':
-      return 'King';
+      return 'K';
     default:
       return '';
   }
