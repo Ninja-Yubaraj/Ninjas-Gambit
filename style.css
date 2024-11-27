@@ -1,39 +1,55 @@
 /* Style for the chessboard container */
 #chessboard {
-    width: 480px;
-    height: 480px;
-    margin: 20px auto;
-    display: flex;
-    flex-wrap: wrap;
-    border: 2px solid #333;
-  }
-  
-  /* Style for each square */
-  .square {
-    width: 60px;
-    height: 60px;
-    box-sizing: border-box;
-    position: relative;
-  }
-  
-  /* Light and dark squares */
-  .square.light {
-    background-color: #f0d9b5;
-  }
-  
-  .square.dark {
-    background-color: #b58863;
-  }
-  
-  /* Style for the pieces */
-  .piece {
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    cursor: pointer;
-  }
-  
-  .selected {
-    outline: 2px solid red;
-  }
-  
+  width: 480px;
+  height: 480px;
+  margin: 20px auto;
+  display: flex;
+  flex-wrap: wrap;
+  border: 2px solid #333;
+}
+
+/* Style for each square */
+.square {
+  width: 60px;
+  height: 60px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Light and dark squares */
+.square.light {
+  background-color: #f0d9b5;
+}
+
+.square.dark {
+  background-color: #b58863;
+}
+
+/* Style for the pieces */
+.piece {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  cursor: pointer;
+}
+
+.selected {
+  outline: 2px solid red;
+}
+
+/* Game status */
+#game-status {
+  text-align: center;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+/* Highlight possible moves */
+.possible-move {
+  background-color: rgba(0, 255, 0, 0.5);
+}
+
+/* Highlight the king in check */
+.check {
+  outline: 2px solid red;
+}
