@@ -29,6 +29,15 @@ let castlingRights = {
 // Variable to track en passant target
 let enPassantTarget = null;
 
+// Load sound files
+const sounds = {
+  move: new Audio('sounds/move.mp3'),
+  capture: new Audio('sounds/capture.mp3'),
+  castle: new Audio('sounds/castle.mp3'),
+  check: new Audio('sounds/check.mp3'),
+  promote: new Audio('sounds/promote.mp3')
+};
+
 function createBoard() {
   chessboard.innerHTML = '';
   for (let row = 0; row < 8; row++) {
@@ -185,6 +194,19 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
 
   moveCount++;
 
+  // Play appropriate sound
+  if (promotion) {
+    sounds.promote.play();
+  } else if (isCastlingMove) {
+    sounds.castle.play();
+  } else if (capturedPiece) {
+    sounds.capture.play();
+  } else if (isOpponentInCheck) {
+    sounds.check.play();
+  } else {
+    sounds.move.play();
+  }
+
   // Handle game end conditions
   if (isOpponentInCheckmate) {
     alert(`${turn === 'w' ? 'Black' : 'White'} wins by checkmate!`);
@@ -227,6 +249,8 @@ function promotePawn(row, col, color) {
     pieceType = pieceType.toLowerCase();
   }
   boardState[row][col] = color + pieceType;
+  // Play promotion sound
+  sounds.promote.play();
   return pieceType;
 }
 
