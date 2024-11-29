@@ -31,12 +31,18 @@ let enPassantTarget = null;
 
 // Load sound files
 const sounds = {
-  move: new Audio('sounds/move.mp3'),
-  capture: new Audio('sounds/capture.mp3'),
-  castle: new Audio('sounds/castle.mp3'),
-  check: new Audio('sounds/check.mp3'),
-  promote: new Audio('sounds/promote.mp3')
+  moveSelf: new Audio('sounds/move-self.webm'),
+  moveOpponent: new Audio('sounds/move-opponent.webm'),
+  capture: new Audio('sounds/capture.webm'),
+  castle: new Audio('sounds/castle.webm'),
+  check: new Audio('sounds/move-check.webm'),
+  promote: new Audio('sounds/promote.webm'),
+  gameStart: new Audio('sounds/game-start.webm'),
+  gameEnd: new Audio('sounds/game-end.webm')
 };
+
+// Play game start sound
+sounds.gameStart.play();
 
 function createBoard() {
   chessboard.innerHTML = '';
@@ -204,7 +210,7 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
 
   // Play appropriate sound
   if (isOpponentInCheckmate) {
-    sounds.check.play(); // Or sounds.checkmate.play() if you have a separate sound
+    sounds.gameEnd.play();
   } else if (isOpponentInCheck) {
     sounds.check.play();
   } else if (promotion) {
@@ -214,7 +220,11 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
   } else if (capturedPiece) {
     sounds.capture.play();
   } else {
-    sounds.move.play();
+    if (turn === 'w') {
+      sounds.moveOpponent.play(); // Black just moved; it's White's turn
+    } else {
+      sounds.moveOpponent.play(); // White just moved; it's Black's turn
+    }
   }
 
   // Handle game end conditions
@@ -222,6 +232,7 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
     alert(`${turn === 'w' ? 'Black' : 'White'} wins by checkmate!`);
   } else if (isOpponentInStalemate) {
     alert(`Game over: Stalemate!`);
+    sounds.gameEnd.play();
   }
   // Commented out the alert for checks
   // else if (isOpponentInCheck) {
