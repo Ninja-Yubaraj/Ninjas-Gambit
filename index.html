@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>Chess Game</title>
@@ -8,10 +8,22 @@
 <body>
   <h1>Chess Game</h1>
   <div id="game-status">Turn: White</div>
+  
+  <!-- Chessboard Container -->
   <div id="chessboard"></div>
+
+  <!-- Navigation Buttons -->
+  <div id="navigation-buttons">
+    <button id="beginning-btn">Beginning</button>
+    <button id="back-btn">Back</button>
+    <button id="forward-btn">Forward</button>
+    <button id="ending-btn">Ending</button>
+    <button id="replay-btn">Replay</button>
+  </div>
+
+  <!-- Move History -->
   <div id="move-history" class="move-history"></div>
 
-  <!-- Include the script.js file -->
   <script src="script.js"></script>
 </body>
 </html>

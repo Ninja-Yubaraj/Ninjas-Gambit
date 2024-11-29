@@ -1,23 +1,20 @@
 /* General Styles */
 body {
   font-family: Arial, sans-serif;
-  background-color: #eee;
+  text-align: center;
   margin: 0;
-  padding: 20px;
+  padding: 0;
 }
 
 h1 {
-  text-align: center;
+  margin-top: 20px;
 }
 
-/* Game status */
 #game-status {
-  text-align: center;
-  font-size: 1.2em;
   margin-bottom: 10px;
+  font-weight: bold;
 }
 
-/* Style for the chessboard container */
 #chessboard {
   width: 480px;
   height: 480px;
@@ -27,15 +24,13 @@ h1 {
   border: 2px solid #333;
 }
 
-/* Style for each square */
+/* Square Styles */
 .square {
   width: 60px;
   height: 60px;
-  box-sizing: border-box;
   position: relative;
 }
 
-/* Light and dark squares */
 .square.light {
   background-color: #f0d9b5;
 }
@@ -44,49 +39,90 @@ h1 {
   background-color: #b58863;
 }
 
-/* Style for the pieces */
+/* Piece Styles */
 .piece {
   width: 100%;
   height: 100%;
-  background-size: cover;
+  background-size: contain;
+  background-repeat: no-repeat;
   cursor: pointer;
 }
 
-.selected {
-  outline: 2px solid blue;
+/* Highlighting Moves */
+.square.selected {
+  outline: 3px solid yellow;
 }
 
-/* Highlight possible moves */
-.possible-move {
-  background-color: rgba(0, 255, 0, 0.5);
-  cursor: pointer;
+.square.possible-move::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  background-color: rgba(255, 255, 0, 0.5);
+  border-radius: 50%;
+  position: absolute;
+  top: 20px;
+  left: 20px;
 }
 
-/* Highlight the king in check */
-.check {
-  background-color: rgba(255, 0, 0, 0.5); /* Semi-transparent red background */
-  animation: blinker 1s linear infinite;   /* Blinking effect */
+.piece.check {
+  animation: check-animation 1s infinite;
 }
 
-@keyframes blinker {
+@keyframes check-animation {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.7);
+  }
   50% {
-    opacity: 0.5;
+    box-shadow: 0 0 0 3px rgba(255, 0, 0, 0);
   }
 }
 
+/* Navigation Buttons Styles */
+#navigation-buttons {
+  width: 480px;
+  margin: 10px auto;
+  text-align: center;
+}
+
+#navigation-buttons button {
+  padding: 10px 15px;
+  margin: 5px;
+  font-size: 1em;
+  cursor: pointer;
+}
 
 /* Move History Styles */
-.move-history {
+#move-history {
   width: 480px;
   margin: 20px auto;
+  text-align: left;
+  font-size: 1em;
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #333;
-  padding: 10px;
-  background-color: #f9f9f9;
 }
 
 .move-history div {
-  margin-bottom: 5px;
-  font-size: 0.9em;
+  padding: 2px 0;
+}
+
+/* Highlight Current Move */
+.move-history .current-move {
+  background-color: #ffff99;
+}
+
+/* Scrollbar Styles (Optional) */
+#move-history::-webkit-scrollbar {
+  width: 8px;
+}
+
+#move-history::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+#move-history::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+#move-history::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

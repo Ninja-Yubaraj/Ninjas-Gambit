@@ -78,6 +78,7 @@ function createBoard() {
 }
 
 function pieceClick(e, row, col) {
+  if (isReplaying) return;
   e.stopPropagation();
   const piece = boardState[row][col];
   if (piece[0] !== turn) {
@@ -97,6 +98,7 @@ function pieceClick(e, row, col) {
 }
 
 function squareClick(row, col) {
+  if (isReplaying) return;
   if (!selectedPiece) return;
   if (possibleMoves.some(move => move.row === row && move.col === col)) {
     makeMove(selectedPiece.row, selectedPiece.col, row, col);
@@ -185,16 +187,12 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
     enPassantTarget = { row: (fromRow + toRow) / 2, col: fromCol };
   }
 
-  // Switch turns
-  turn = turn === 'w' ? 'b' : 'w';
-
-  // Check for check or checkmate
-  const opponentColor = turn;
+  // Store the move in moveHistory with check information
+  const opponentColor = turn === 'w' ? 'b' : 'w';
   const isOpponentInCheck = isCheck(opponentColor);
   const isOpponentInCheckmate = isCheckmate(opponentColor);
   const isOpponentInStalemate = isStalemate(opponentColor);
 
-  // Store the move in moveHistory with check information
   moveHistory.push({
     piece: movingPiece,
     from: [fromRow, fromCol],
@@ -207,6 +205,7 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
   });
 
   moveCount++;
+  currentMoveIndex = moveHistory.length;
 
   // Play appropriate sound
   if (isOpponentInCheckmate) {
@@ -238,6 +237,9 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
   // else if (isOpponentInCheck) {
   //   alert(`${turn === 'w' ? 'White' : 'Black'} is in check!`);
   // }
+
+  // Switch turns
+  turn = turn === 'w' ? 'b' : 'w';
 
   createBoard();
   updateMoveHistory();
@@ -688,6 +690,8 @@ function updateMoveHistory() {
     movesByNumber.push({ whiteMove, blackMove });
   }
 
+  let moveCounter = 0;
+
   movesByNumber.forEach((movePair, index) => {
     const moveNumber = index + 1;
     const whiteAlgebraic = movePair.whiteMove ? getAlgebraicNotation(movePair.whiteMove) : '';
@@ -695,7 +699,14 @@ function updateMoveHistory() {
 
     const moveText = document.createElement('div');
     moveText.textContent = `${moveNumber}. ${whiteAlgebraic}    ${blackAlgebraic}`;
+
+    // Highlight the current move
+    if (moveCounter === currentMoveIndex - 1 || moveCounter === currentMoveIndex - 2) {
+      moveText.classList.add('current-move');
+    }
+
     historyDiv.appendChild(moveText);
+    moveCounter += 2;
   });
 }
 
@@ -791,3 +802,137 @@ function updateGameStatus() {
 
 createBoard();
 updateMoveHistory();
+
+// Variables for navigation and replay
+let currentMoveIndex = moveHistory.length; // Starts at the latest move
+let isReplaying = false;
+let replayInterval = null;
+
+// Navigation Buttons Event Listeners
+document.getElementById('beginning-btn').addEventListener('click', goToBeginning);
+document.getElementById('back-btn').addEventListener('click', stepBack);
+document.getElementById('forward-btn').addEventListener('click', stepForward);
+document.getElementById('ending-btn').addEventListener('click', goToEnding);
+document.getElementById('replay-btn').addEventListener('click', replayMoves);
+
+// Functions for navigation
+function goToBeginning() {
+  if (isReplaying) return;
+  currentMoveIndex = 0;
+  loadPositionFromHistory();
+}
+
+function stepBack() {
+  if (isReplaying) return;
+  if (currentMoveIndex > 0) {
+    currentMoveIndex--;
+    loadPositionFromHistory();
+  }
+}
+
+function stepForward() {
+  if (isReplaying) return;
+  if (currentMoveIndex < moveHistory.length) {
+    currentMoveIndex++;
+    loadPositionFromHistory();
+  }
+}
+
+function goToEnding() {
+  if (isReplaying) return;
+  currentMoveIndex = moveHistory.length;
+  loadPositionFromHistory();
+}
+
+function replayMoves() {
+  if (isReplaying) {
+    // Stop replaying
+    clearInterval(replayInterval);
+    isReplaying = false;
+    document.getElementById('replay-btn').textContent = 'Replay';
+    return;
+  }
+
+  goToBeginning();
+  isReplaying = true;
+  document.getElementById('replay-btn').textContent = 'Stop';
+  replayInterval = setInterval(() => {
+    if (currentMoveIndex < moveHistory.length) {
+      currentMoveIndex++;
+      loadPositionFromHistory();
+    } else {
+      clearInterval(replayInterval);
+      isReplaying = false;
+      document.getElementById('replay-btn').textContent = 'Replay';
+    }
+  }, 1000); // Adjust the interval as desired (in milliseconds)
+}
+
+function loadPositionFromHistory() {
+  // Reset the board to the initial state
+  boardState = JSON.parse(JSON.stringify(initialBoard));
+  turn = 'w';
+  castlingRights = {
+    w: { kingSide: true, queenSide: true },
+    b: { kingSide: true, queenSide: true }
+  };
+  enPassantTarget = null;
+  moveCount = 0;
+
+  // Play moves up to currentMoveIndex
+  for (let i = 0; i < currentMoveIndex; i++) {
+    const move = moveHistory[i];
+    applyMove(move);
+    turn = turn === 'w' ? 'b' : 'w';
+  }
+
+  createBoard();
+  updateMoveHistory();
+  updateGameStatus();
+}
+
+function applyMove(move) {
+  const fromRow = move.from[0];
+  const fromCol = move.from[1];
+  const toRow = move.to[0];
+  const toCol = move.to[1];
+  const movingPiece = boardState[fromRow][fromCol];
+
+  // Handle castling move
+  if (move.isCastling) {
+    if (toCol === 6) {
+      // King-side castling
+      boardState[fromRow][5] = boardState[fromRow][7];
+      boardState[fromRow][7] = '';
+    } else if (toCol === 2) {
+      // Queen-side castling
+      boardState[fromRow][3] = boardState[fromRow][0];
+      boardState[fromRow][0] = '';
+    }
+  }
+
+  // En Passant capture
+  if (movingPiece[1] === 'p' && enPassantTarget && toRow === enPassantTarget.row && toCol === enPassantTarget.col) {
+    boardState[fromRow][toCol] = '';
+  }
+
+  boardState[toRow][toCol] = movingPiece;
+  boardState[fromRow][fromCol] = '';
+
+  // Update castling rights
+  updateCastlingRights(movingPiece, fromRow, fromCol);
+
+  // Handle promotion
+  if (move.promotion) {
+    boardState[toRow][toCol] = movingPiece[0] + move.promotion;
+  }
+
+  // Update en passant target
+  enPassantTarget = null;
+  if (movingPiece[1] === 'p' && Math.abs(toRow - fromRow) === 2) {
+    enPassantTarget = { row: (fromRow + toRow) / 2, col: fromCol };
+  }
+
+  moveCount++;
+}
+
