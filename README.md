@@ -4,7 +4,7 @@ Chess in Browser.
 
 # TODOs:
 - Bug Fix:
-    - both capture and check sound plays, when caputuring a piece with check.
+    - ~~both capture and check sound plays, when caputuring a piece with check.~~
 - UI Changes:
     - change Orientation(Center big rectangle, 70% board, 30% Dashboard).
     - Dashboard should have:

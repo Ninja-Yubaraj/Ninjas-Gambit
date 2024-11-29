@@ -110,6 +110,11 @@ function updateHighlights() {
     square.classList.remove('possible-move', 'selected', 'check');
   });
 
+  const pieces = document.querySelectorAll('.piece');
+  pieces.forEach(piece => {
+    piece.classList.remove('check');
+  });
+
   if (selectedPiece) {
     const selectedSquare = document.querySelector(`.square[data-row="${selectedPiece.row}"][data-col="${selectedPiece.col}"]`);
     selectedSquare.classList.add('selected');
@@ -120,11 +125,14 @@ function updateHighlights() {
     });
   }
 
-  // Highlight the king when in check
-  const kingPosition = findKing(turn);
-  if (kingPosition && isCheck(turn)) {
-    const kingSquare = document.querySelector(`.square[data-row="${kingPosition.row}"][data-col="${kingPosition.col}"]`);
-    kingSquare.classList.add('check');
+  // Highlight the opponent's king when in check
+  const opponentColor = turn === 'w' ? 'b' : 'w';
+  const kingPosition = findKing(opponentColor);
+  if (kingPosition && isCheck(opponentColor)) {
+    const kingPiece = document.querySelector(`.piece[data-row="${kingPosition.row}"][data-col="${kingPosition.col}"]`);
+    if (kingPiece) {
+      kingPiece.classList.add('check');
+    }
   }
 }
 
@@ -195,14 +203,16 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
   moveCount++;
 
   // Play appropriate sound
-  if (promotion) {
+  if (isOpponentInCheckmate) {
+    sounds.check.play(); // Or sounds.checkmate.play() if you have a separate sound
+  } else if (isOpponentInCheck) {
+    sounds.check.play();
+  } else if (promotion) {
     sounds.promote.play();
   } else if (isCastlingMove) {
     sounds.castle.play();
   } else if (capturedPiece) {
     sounds.capture.play();
-  } else if (isOpponentInCheck) {
-    sounds.check.play();
   } else {
     sounds.move.play();
   }
